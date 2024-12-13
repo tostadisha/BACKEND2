@@ -1,7 +1,4 @@
 import { Router } from "express";
-import userModel from "../models/user.model.js";
-import { createHash } from "../utils/hashingUtils.js";
-import passport from "passport";
 import { generateToken } from "../utils/generateToken.js";
 import { passportCall } from "../utils/passportCall.js";
 
@@ -13,7 +10,7 @@ router.post("/register", passportCall("register"), async (req, res) => {
 
   const token = generateToken(user);
   res
-    .cookie("coderPracticaIntegradora", token, { httpOnly: true })
+    .cookie("coderCookie", token, { httpOnly: true })
     .send({ message: "Usuario registrado", user: user });
 });
 router.get("/profile", passportCall("jwt"), (req, res) => {
@@ -29,12 +26,12 @@ router.post("/login", passportCall("login"), async (req, res) => {
 
   const token = generateToken(user);
   res
-    .cookie("coderPracticaIntegradora", token, { httpOnly: true })
+    .cookie("coderCookie", token, { httpOnly: true })
     .send({ message: "Usuario logeado", user: user });
 });
 router.get("/logout", (req, res) => {
   res
-    .clearCookie("coderPracticaIntegradora")
+    .clearCookie("coderCookie")
     .json({ message: "Se ha podido deslogear exitosamente" });
 });
 router.get("/github", passportCall("github"));
@@ -45,7 +42,7 @@ router.get("/githubcallback", passportCall("github"), (req, res) => {
       return res.status(401).json({ message: "Credenciales inválidas" });
     const token = generateToken(user);
     res
-      .cookie("coderPracticaIntegradora", token, { httpOnly: true })
+      .cookie("coderCookie", token, { httpOnly: true })
       .send("Se ha podido logear correctamente");
   } catch (error) {
     return res.status(400).send(error.message);
@@ -53,10 +50,21 @@ router.get("/githubcallback", passportCall("github"), (req, res) => {
 });
 router.get("/current", passportCall("current"), (req, res) => {
   try {
-    res.status(200).json({
-      message: "Usuario autenticado",
-      user: req.user,
-    });
+    const user = req.user;
+    let role = "";
+    if (user.role.toLowerCase() == "admin") {
+      role = "Administrador";
+    }
+    if (user.role.toLowerCase() == "user") {
+      role = "Usuario";
+    }
+    const data = {
+      Nombre: user.firstName,
+      Apellido: user.lastName,
+      Edad: user.age,
+      Rol: role,
+    };
+    res.status(200).json({ message: "Usuario autenticado", user: data });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

@@ -15,9 +15,7 @@ const initializePassport = () => {
       {
         jwtFromRequest: ExtractJwt.fromExtractors([
           (req) => {
-            return req && req.cookies
-              ? req.cookies["coderPracticaIntegradora"]
-              : null;
+            return req && req.cookies ? req.cookies["coderCookie"] : null;
           },
         ]),
         secretOrKey: process.env.SECRET_JWT,
@@ -71,8 +69,8 @@ const initializePassport = () => {
               false,
               "El usuario al que se ha querido logear no existe"
             );
-          if (!isValidPassword(user, password)) return done(null, false);
-          console.log("Pasó por aca 2");
+          if (!isValidPassword(user, password))
+            return done(null, false, "La contraseña no es válida");
           return done(null, user, "Logeo exitoso");
         } catch (error) {
           return done(error);
@@ -114,9 +112,7 @@ const initializePassport = () => {
       {
         jwtFromRequest: ExtractJwt.fromExtractors([
           (req) => {
-            return req && req.cookies
-              ? req.cookies["coderPracticaIntegradora"]
-              : null;
+            return req && req.cookies ? req.cookies["coderCookie"] : null;
           },
         ]),
         secretOrKey: process.env.SECRET_JWT,
